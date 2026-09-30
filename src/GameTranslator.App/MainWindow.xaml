@@ -1,0 +1,319 @@
+<Window x:Class="GameTranslator.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="GameTranslator"
+        Icon="Assets/GameTranslator.ico"
+        Width="940"
+        Height="820"
+        MinWidth="760"
+        MinHeight="680"
+        WindowStartupLocation="CenterScreen"
+        Background="#F6F8FB">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <TextBlock Text="GameTranslator"
+                       FontSize="24"
+                       FontWeight="SemiBold"
+                       Foreground="#172033" />
+            <TextBlock Margin="10,0,0,2"
+                       VerticalAlignment="Bottom"
+                       Text="{Binding VersionText}"
+                       FontSize="12"
+                       Foreground="#647084" />
+        </StackPanel>
+
+        <Border Grid.Row="1"
+                Margin="0,18,0,14"
+                BorderBrush="{StaticResource PanelBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="6"
+                Background="White"
+                Padding="14">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0"
+                        Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Ollama URL:" />
+                <TextBox Grid.Row="0"
+                         Grid.Column="1"
+                         Margin="10,0,8,0"
+                         MinWidth="280"
+                         VerticalContentAlignment="Center"
+                         Padding="8,6"
+                         Text="{Binding OllamaBaseUrl, UpdateSourceTrigger=LostFocus}"
+                         LostFocus="OllamaBaseUrl_LostFocus" />
+                <Button Grid.Row="0"
+                        Grid.Column="2"
+                        x:Name="RefreshModelsButton"
+                        Padding="14,7"
+                        Click="RefreshModels_Click"
+                        Content="Làm mới" />
+
+                <TextBlock Grid.Row="1"
+                           Grid.Column="0"
+                           Margin="0,10,0,0"
+                           VerticalAlignment="Center"
+                           Text="Model:" />
+                <ComboBox Grid.Row="1"
+                          Grid.Column="1"
+                          Grid.ColumnSpan="2"
+                          x:Name="ModelComboBox"
+                          Margin="10,10,0,0"
+                          MinWidth="280"
+                          Padding="7,5"
+                          ItemsSource="{Binding AvailableModels}"
+                          SelectedItem="{Binding SelectedModel, Mode=TwoWay}"
+                          SelectionChanged="Model_SelectionChanged" />
+
+                <StackPanel Grid.Row="2"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="3"
+                            Margin="0,12,0,0"
+                            Orientation="Horizontal">
+                    <Button x:Name="SelectRegionButton"
+                            Padding="16,9"
+                            Click="SelectRegion_Click"
+                            Content="Chọn vùng" />
+                    <Button x:Name="CaptureButton"
+                            Margin="8,0,0,0"
+                            Padding="16,9"
+                            Click="Capture_Click"
+                            Content="Chụp thử" />
+                    <Button x:Name="TranslateButton"
+                            Margin="8,0,0,0"
+                            Padding="22,9"
+                            FontWeight="SemiBold"
+                            Click="Translate_Click"
+                            Content="DỊCH" />
+                    <TextBlock Margin="16,0,0,0"
+                               VerticalAlignment="Center"
+                               Text="{Binding OllamaStatusText}"
+                               Foreground="#47627A" />
+                </StackPanel>
+
+                <WrapPanel Grid.Row="3"
+                           Grid.Column="0"
+                           Grid.ColumnSpan="3"
+                           Margin="0,12,0,0"
+                           VerticalAlignment="Center">
+                    <Button x:Name="OverlayToggleButton"
+                            Padding="14,7"
+                            Click="OverlayToggle_Click"
+                            Content="Hiện Overlay" />
+                    <TextBlock Margin="16,0,6,0"
+                               VerticalAlignment="Center"
+                               Text="Cỡ chữ:" />
+                    <Slider x:Name="OverlayFontSizeSlider"
+                            Width="110"
+                            Minimum="16"
+                            Maximum="40"
+                            TickFrequency="1"
+                            IsSnapToTickEnabled="True"
+                            Value="{Binding OverlayFontSize, Mode=TwoWay}"
+                            ValueChanged="OverlayAppearance_Changed" />
+                    <TextBlock Width="30"
+                               Margin="6,0,0,0"
+                               VerticalAlignment="Center"
+                               Text="{Binding OverlayFontSize, StringFormat={}{0:F0}}" />
+                    <TextBlock Margin="12,0,6,0"
+                               VerticalAlignment="Center"
+                               Text="Độ đậm nền:" />
+                    <Slider x:Name="OverlayOpacitySlider"
+                            Width="110"
+                            Minimum="0.45"
+                            Maximum="1"
+                            TickFrequency="0.05"
+                            IsSnapToTickEnabled="True"
+                            Value="{Binding OverlayBackgroundOpacity, Mode=TwoWay}"
+                            ValueChanged="OverlayAppearance_Changed" />
+                    <CheckBox Margin="16,0,0,0"
+                              VerticalAlignment="Center"
+                              Content="Click-through"
+                              IsChecked="{Binding OverlayClickThrough, Mode=TwoWay}"
+                              Checked="OverlayClickThrough_Changed"
+                              Unchecked="OverlayClickThrough_Changed" />
+                </WrapPanel>
+
+                <Grid Grid.Row="4"
+                      Grid.Column="0"
+                      Grid.ColumnSpan="3"
+                      Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0"
+                               VerticalAlignment="Center"
+                               Text="Phím tắt dịch:" />
+                    <Border Grid.Column="1"
+                            MinWidth="120"
+                            Margin="10,0,0,0"
+                            Padding="10,6"
+                            BorderBrush="#B9C4D2"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Background="#F9FBFE">
+                        <TextBlock HorizontalAlignment="Center"
+                                   FontWeight="SemiBold"
+                                   Text="{Binding HotkeyDisplayText}" />
+                    </Border>
+                    <Button Grid.Column="2"
+                            x:Name="ChangeHotkeyButton"
+                            Margin="8,0,0,0"
+                            Padding="12,7"
+                            Click="ChangeHotkey_Click"
+                            Content="Đổi phím" />
+                    <Button Grid.Column="3"
+                            x:Name="ResetHotkeyButton"
+                            Margin="8,0,0,0"
+                            Padding="12,7"
+                            Click="ResetHotkey_Click"
+                            Content="Khôi phục mặc định" />
+                    <TextBlock Grid.Column="4"
+                               Margin="12,0,0,0"
+                               VerticalAlignment="Center"
+                               Foreground="#647084"
+                               Text="{Binding HotkeyStatusText}"
+                               TextWrapping="Wrap" />
+                </Grid>
+
+                <TextBlock Grid.Row="5"
+                           Grid.Column="0"
+                           Grid.ColumnSpan="3"
+                           Margin="0,12,0,0"
+                           Text="{Binding TimingText}"
+                           TextWrapping="Wrap"
+                           FontFamily="Consolas"
+                           Foreground="#172033" />
+
+                <TextBlock Grid.Row="6"
+                           Grid.Column="0"
+                           Grid.ColumnSpan="3"
+                           Margin="0,7,0,0"
+                           Text="{Binding SelectedRegionText, StringFormat=Vùng chọn: {0}}"
+                           TextWrapping="Wrap"
+                           Foreground="#647084" />
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="14" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0"
+                    BorderBrush="{StaticResource PanelBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Background="White"
+                    Padding="14">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Ảnh chụp thử"
+                               FontWeight="SemiBold"
+                               Foreground="#172033" />
+                    <Border Grid.Row="1"
+                            Margin="0,10,0,0"
+                            Background="#EFF3F8"
+                            BorderBrush="#D7DEE8"
+                            BorderThickness="1">
+                        <Grid>
+                            <TextBlock HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Foreground="#7A8598"
+                                       Text="Chưa có ảnh chụp"
+                                       IsHitTestVisible="False" />
+                            <Image Source="{Binding PreviewImage}"
+                                   Stretch="Uniform" />
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="2"
+                    BorderBrush="{StaticResource PanelBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Background="White"
+                    Padding="14">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Văn bản tiếng Anh"
+                               FontWeight="SemiBold"
+                               Foreground="#172033" />
+                    <TextBox Grid.Row="1"
+                             Margin="0,10,0,0"
+                             Text="{Binding OcrText, Mode=OneWay}"
+                             IsReadOnly="True"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto"
+                             BorderThickness="0"
+                             Background="#F9FBFE"
+                             Padding="10" />
+                    <TextBlock Grid.Row="2"
+                               Margin="0,12,0,0"
+                               Text="Bản dịch tiếng Việt"
+                               FontWeight="SemiBold"
+                               Foreground="#172033" />
+                    <TextBox Grid.Row="3"
+                             Margin="0,10,0,0"
+                             Text="{Binding TranslationText, Mode=OneWay}"
+                             IsReadOnly="True"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto"
+                             BorderThickness="0"
+                             Background="#F9FBFE"
+                             Padding="10" />
+                </Grid>
+            </Border>
+        </Grid>
+
+        <StackPanel Grid.Row="3" Margin="0,12,0,0">
+            <TextBlock Foreground="#172033"
+                       Text="{Binding StatusText}"
+                       TextWrapping="Wrap" />
+            <TextBlock Margin="0,4,0,0"
+                       Foreground="#647084"
+                       FontSize="12"
+                       Text="{Binding DiagnosticsText}"
+                       TextWrapping="Wrap" />
+        </StackPanel>
+    </Grid>
+</Window>

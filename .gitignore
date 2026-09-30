@@ -1,0 +1,13 @@
+bin/
+obj/
+artifacts/
+
+.dotnet/
+.dotnet-install.ps1
+
+TestResults/
+.vs/
+*.user
+*.suo
+*.log
+*.tmp
