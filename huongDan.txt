@@ -1,0 +1,74 @@
+HUONG DAN MO VA SU DUNG GAMETRANSLATOR
+=====================================
+
+1. FILE EXE NAM O DAU?
+
+Sau khi tao ban release, file chay chinh nam tai:
+
+F:\dev\appSrtDich\artifacts\publish\win-x64\GameTranslator.exe
+
+File ZIP de chep sang may khac nam tai:
+
+F:\dev\appSrtDich\artifacts\GameTranslator-win-x64.zip
+
+GameTranslator la app portable, khong co trinh cai dat Setup.exe.
+Khong chep rieng GameTranslator.exe vi app can cac DLL, .NET runtime va model OCR
+nam cung thu muc. Khi chuyen sang may khac, hay chep file ZIP, giai nen toan bo,
+sau do chay GameTranslator.exe trong thu muc vua giai nen.
+
+
+2. NEU KHONG THAY THU MUC ARTIFACTS HOAC FILE EXE
+
+Thu muc artifacts khong duoc dua len GitHub vi chua cac file build rat lon.
+Sau khi clone source tu GitHub, mo PowerShell tai thu muc du an va chay:
+
+.\scripts\publish-win-x64.ps1
+
+Script se tu dong restore, build Release, chay test, tao ban portable va file ZIP.
+Sau khi script hoan tat, file EXE se xuat hien tai duong dan o muc 1.
+
+
+3. YEU CAU TRUOC KHI CHAY
+
+- Windows 10 hoac Windows 11 x64.
+- Ollama da duoc cai va dang chay.
+- Co it nhat mot model dich local.
+
+Model khuyen nghi:
+
+ollama pull translategemma:4b
+
+Ban portable da co san .NET va OCR, khong can cai .NET rieng.
+
+
+4. CACH SU DUNG APP
+
+1. Khoi dong Ollama.
+2. Chay GameTranslator.exe.
+3. Chon model Ollama trong app.
+4. Bam "Chon vung".
+5. Keo chuot quanh vung hoi thoai tieng Anh trong game.
+6. Bam "Hien Overlay" va dat overlay o vi tri mong muon.
+7. Khi can dich, nhan F8. Co the doi phim tat trong app.
+8. App se chup mot lan, OCR tieng Anh, dich bang Ollama va hien tieng Viet.
+
+App khong tu dong theo doi man hinh va chi dich khi bam nut DICH hoac phim tat.
+
+
+5. XU LY SU CO NHANH
+
+- Ollama khong ket noi: mo Ollama, kiem tra URL http://localhost:11434 va bam
+  "Lam moi" trong app.
+- Khong co model: chay lenh ollama pull translategemma:4b, roi bam "Lam moi".
+- OCR khong doc duoc: chon lai vung sat phan chu tieng Anh va thu lai.
+- F8 bi trung: bam "Doi phim" va chon mot to hop khac.
+- Overlay khong hien: bam "Hien Overlay" trong cua so chinh.
+
+
+6. NOI LUU CAU HINH
+
+Cau hinh ca nhan nam tai:
+
+%LOCALAPPDATA%\GameTranslator\settings.json
+
+File nay luu Ollama URL, model, vi tri/kich thuoc overlay va phim tat.
