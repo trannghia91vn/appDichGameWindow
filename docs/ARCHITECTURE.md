@@ -24,9 +24,9 @@ GameTranslator.Core
 
 `GameTranslator.App` contains the WPF shell and Windows/provider-specific implementations: `RegionSelectorWindow`, `TranslationOverlayWindow`, `WindowsScreenCaptureService`, `RapidOcrService`, `OllamaTranslationService`, the global-hotkey services, and local JSON settings.
 
-## Manual Pipeline
+## Translation Pipelines
 
-The current Phase 5 pipeline is:
+The shared translation pipeline is:
 
 ```text
 ScreenRegion
@@ -39,7 +39,7 @@ ScreenRegion
     -> Vietnamese text
 ```
 
-One explicit translation command calls capture once, OCR once, and performs one exact cache lookup. A cache miss makes one logical translation call. `Chụp thử` calls capture once without OCR or translation. All paths are user-triggered and reject overlapping work rather than queueing it. There is no timer, polling loop, continuous capture, continuous OCR, automatic translation loop, or frame similarity detection.
+One explicit manual translation command calls capture once, OCR once, and performs one exact cache lookup. A cache miss makes one logical translation call. `Chụp thử` calls capture once without OCR or translation. Manual paths reject overlapping work rather than queueing it.
 
 MainWindow `DỊCH`, overlay `DỊCH`, and the global hotkey all execute one `TranslationCommand` backed by the same `TranslationPipeline` instance and in-memory cache. When the overlay is visible, `OverlayTranslationCoordinator` runs this order:
 
@@ -56,6 +56,10 @@ explicit translation command
 ```
 
 `TranslationPipeline` exposes a capture-completed callback after the screenshot is fully materialized and before OCR. This keeps the core independent of WPF while allowing the overlay to remain hidden only during capture.
+
+When the user explicitly enables the overlay `Realtime` switch, `RealtimeTranslationController` runs the same pipeline in a cancellation-aware sequential loop. Each iteration must complete before the controller waits 850 ms and starts another. `TranslationPipeline.TranslateIfChangedAsync` compares normalized OCR text with the previous observation and skips cache/Ollama work when unchanged. Blank observations are remembered so the same dialogue is translated again if it disappears and later returns.
+
+Realtime defaults off, never starts with the application, stops when the switch is turned off or the overlay is hidden, and disables manual translation controls while active. There is no overlapping capture/OCR/translation, work queue, frame-similarity detector, or separate background OCR worker.
 
 ## Region Coordinates
 
@@ -103,7 +107,7 @@ The selected model and Ollama base URL are saved to `%LocalAppData%/GameTranslat
 
 ## Translation Overlay
 
-`TranslationOverlayWindow` is a borderless, always-on-top WPF window with a draggable header, resize grip, wrapped/scrollable Vietnamese text, processing state, and manual `DỊCH`, hide, and close-as-hide controls. It does not own MainWindow, so MainWindow can remain minimized while the overlay stays visible.
+`TranslationOverlayWindow` is a borderless, always-on-top WPF window with a draggable header, resize grip, wrapped/scrollable Vietnamese text, processing state, manual `DỊCH`, an opt-in `Realtime` switch, hide, and close-as-hide controls. It does not own MainWindow, so MainWindow can remain minimized while the overlay stays visible. Manual `DỊCH` is disabled only while realtime is active.
 
 Two independent layers prevent overlay pixels from contaminating OCR:
 
@@ -126,7 +130,7 @@ Every trigger enters the same atomic `TranslationCommand` gate. Repeated presses
 
 ## Deployment
 
-Version 1.0.0 targets Windows 10/11 x64 and publishes as a normal self-contained .NET folder. Trimming, NativeAOT, and single-file publishing are disabled so WPF, RapidOcrNet, ONNX Runtime, SkiaSharp, native DLLs, and OCR assets keep their validated deployment layout.
+Version 1.1.0 targets Windows 10/11 x64 and publishes as a normal self-contained .NET folder. Trimming, NativeAOT, and single-file publishing are disabled so WPF, RapidOcrNet, ONNX Runtime, SkiaSharp, native DLLs, and OCR assets keep their validated deployment layout.
 
 The release resolves OCR models only from `models/v5` under `AppContext.BaseDirectory`. The publish verification script requires all four PP-OCRv5 model/dictionary files, RapidOcrNet, ONNX Runtime, SkiaSharp, WPF, and self-contained .NET host/runtime files before producing the portable ZIP. It also rejects developer paths and source/test entries in the package.
 

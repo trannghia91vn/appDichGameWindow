@@ -2,7 +2,11 @@ namespace GameTranslator.App.Overlay;
 
 public interface ITranslationOverlayView
 {
+    string DisplayedText { get; }
+
     void SetTranslationEnabled(bool isEnabled);
+
+    void SetStatus(string message);
 
     void ShowProcessing(string message);
 

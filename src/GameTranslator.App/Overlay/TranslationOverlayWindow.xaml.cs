@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Controls.Primitives;
 using System.Windows.Threading;
 
 namespace GameTranslator.App.Overlay;
@@ -19,6 +20,7 @@ public partial class TranslationOverlayWindow : Window, ITranslationOverlayView
     private bool allowClose;
     private bool clickThroughEnabled;
     private bool addedLayeredStyle;
+    private bool suppressRealtimeToggleEvent;
     private nint windowHandle;
 
     public TranslationOverlayWindow()
@@ -30,6 +32,8 @@ public partial class TranslationOverlayWindow : Window, ITranslationOverlayView
 
     public event EventHandler? TranslationRequested;
 
+    public event EventHandler<RealtimeModeChangedEventArgs>? RealtimeModeChanged;
+
     public bool CaptureExclusionEnabled { get; private set; }
 
     public bool IsHiddenForCapture { get; private set; }
@@ -39,6 +43,10 @@ public partial class TranslationOverlayWindow : Window, ITranslationOverlayView
     public string DisplayedText => Dispatcher.CheckAccess()
         ? TranslationTextBox.Text
         : Dispatcher.Invoke(() => TranslationTextBox.Text);
+
+    public bool IsRealtimeEnabled => Dispatcher.CheckAccess()
+        ? RealtimeToggle.IsChecked == true
+        : Dispatcher.Invoke(() => RealtimeToggle.IsChecked == true);
 
     public bool IsClickThroughApplied
     {
@@ -102,7 +110,19 @@ public partial class TranslationOverlayWindow : Window, ITranslationOverlayView
     }
 
     public void SetTranslationEnabled(bool isEnabled) =>
-        RunOnUiThread(() => TranslateButton.IsEnabled = isEnabled);
+        RunOnUiThread(() => TranslateButton.IsEnabled = isEnabled && !IsRealtimeEnabled);
+
+    public void SetStatus(string message) =>
+        RunOnUiThread(() => StatusTextBlock.Text = message);
+
+    public void SetRealtimeEnabled(bool enabled) =>
+        RunOnUiThread(() =>
+        {
+            suppressRealtimeToggleEvent = true;
+            RealtimeToggle.IsChecked = enabled;
+            suppressRealtimeToggleEvent = false;
+            ApplyRealtimeUiState(enabled);
+        });
 
     public void ShowProcessing(string message) =>
         RunOnUiThread(() =>
@@ -217,7 +237,7 @@ public partial class TranslationOverlayWindow : Window, ITranslationOverlayView
 
     private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        if (e.LeftButton != MouseButtonState.Pressed || e.OriginalSource is System.Windows.Controls.Button)
+        if (e.LeftButton != MouseButtonState.Pressed || e.Source is ButtonBase)
         {
             return;
         }
@@ -234,6 +254,29 @@ public partial class TranslationOverlayWindow : Window, ITranslationOverlayView
 
     private void TranslateButton_Click(object sender, RoutedEventArgs e) =>
         TranslationRequested?.Invoke(this, EventArgs.Empty);
+
+    private void RealtimeToggle_Changed(object sender, RoutedEventArgs e)
+    {
+        if (!IsInitialized)
+        {
+            return;
+        }
+
+        var enabled = RealtimeToggle.IsChecked == true;
+        ApplyRealtimeUiState(enabled);
+        if (!suppressRealtimeToggleEvent)
+        {
+            RealtimeModeChanged?.Invoke(this, new RealtimeModeChangedEventArgs(enabled));
+        }
+    }
+
+    private void ApplyRealtimeUiState(bool enabled)
+    {
+        TranslateButton.IsEnabled = !enabled;
+        StatusTextBlock.Text = enabled
+            ? "Realtime: đang khởi động..."
+            : "Bấm DỊCH để chạy một lần.";
+    }
 
     private void HideButton_Click(object sender, RoutedEventArgs e) => Hide();
 
@@ -309,4 +352,9 @@ public partial class TranslationOverlayWindow : Window, ITranslationOverlayView
 
     [DllImport("dwmapi.dll")]
     private static extern int DwmFlush();
+}
+
+public sealed class RealtimeModeChangedEventArgs(bool enabled) : EventArgs
+{
+    public bool Enabled { get; } = enabled;
 }

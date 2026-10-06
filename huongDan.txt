@@ -49,10 +49,13 @@ Ban portable da co san .NET va OCR, khong can cai .NET rieng.
 4. Bam "Chon vung".
 5. Keo chuot quanh vung hoi thoai tieng Anh trong game.
 6. Bam "Hien Overlay" va dat overlay o vi tri mong muon.
-7. Khi can dich, nhan F8. Co the doi phim tat trong app.
-8. App se chup mot lan, OCR tieng Anh, dich bang Ollama va hien tieng Viet.
+7. Dich thu cong: nhan F8 hoac bam "DICH" tren overlay.
+8. Dich tu dong: bat switch "Realtime" tren overlay. App chi dich lai khi chu
+   trong vung chon thay doi.
+9. Tat switch "Realtime" de quay lai che do dich thu cong. An overlay cung se
+   dung Realtime.
 
-App khong tu dong theo doi man hinh va chi dich khi bam nut DICH hoac phim tat.
+Realtime mac dinh la OFF va chi chay sau khi ban chu dong bat switch.
 
 
 5. XU LY SU CO NHANH

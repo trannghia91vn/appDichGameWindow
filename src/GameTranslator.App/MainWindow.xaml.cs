@@ -30,7 +30,9 @@ public partial class MainWindow : Window
     private readonly HttpClient httpClient;
     private readonly TranslationOverlayWindow overlayWindow;
     private readonly OverlayTranslationCoordinator overlayCoordinator;
+    private readonly RealtimeOverlayCoordinator realtimeOverlayCoordinator;
     private readonly TranslationCommand translationCommand;
+    private readonly RealtimeTranslationController realtimeTranslationController;
     private readonly GlobalHotkeyService globalHotkeyService;
     private readonly HotkeyRegistrationManager hotkeyRegistrationManager;
     private readonly CancellationTokenSource lifetimeCancellation = new();
@@ -64,17 +66,27 @@ public partial class MainWindow : Window
             translationPipeline,
             overlayWindow,
             GetOverlayErrorMessage);
+        realtimeOverlayCoordinator = new RealtimeOverlayCoordinator(
+            translationPipeline,
+            overlayWindow,
+            () => overlayWindow.CaptureExclusionEnabled,
+            GetOverlayErrorMessage);
         translationCommand = new TranslationCommand(
             translationPipeline,
             overlayCoordinator,
             () => captureSession.SelectedRegion,
             () => viewModel.SelectedModel,
             () => overlayWindow.IsVisible);
+        realtimeTranslationController = new RealtimeTranslationController(
+            realtimeOverlayCoordinator.ExecuteAsync);
         globalHotkeyService = new GlobalHotkeyService();
         hotkeyRegistrationManager = new HotkeyRegistrationManager(globalHotkeyService);
         ApplyOverlaySettings();
         overlayWindow.TranslationRequested += OverlayWindow_TranslationRequested;
+        overlayWindow.RealtimeModeChanged += OverlayWindow_RealtimeModeChanged;
         overlayWindow.IsVisibleChanged += OverlayWindow_IsVisibleChanged;
+        realtimeTranslationController.ResultAvailable += RealtimeTranslationController_ResultAvailable;
+        realtimeTranslationController.StepFailed += RealtimeTranslationController_StepFailed;
         globalHotkeyService.HotkeyPressed += GlobalHotkeyService_HotkeyPressed;
 
         InitializeComponent();
@@ -82,9 +94,10 @@ public partial class MainWindow : Window
         Loaded += MainWindow_Loaded;
         PreviewKeyDown += MainWindow_PreviewKeyDown;
         Closing += MainWindow_Closing;
-        Closed += (_, _) =>
+        Closed += async (_, _) =>
         {
             lifetimeCancellation.Cancel();
+            await realtimeTranslationController.StopAsync();
             hotkeyRegistrationManager.Unregister();
             globalHotkeyService.Dispose();
             overlayWindow.Shutdown();
@@ -170,6 +183,11 @@ public partial class MainWindow : Window
             return;
         }
 
+        if (realtimeTranslationController.IsRunning)
+        {
+            return;
+        }
+
         if (!overlayWindow.IsVisible)
         {
             overlayWindow.Show();
@@ -180,6 +198,12 @@ public partial class MainWindow : Window
 
     private async Task ExecuteTranslationCommandAsync()
     {
+        if (realtimeTranslationController.IsRunning)
+        {
+            viewModel.StatusText = "Tắt Realtime trước khi dịch thủ công.";
+            return;
+        }
+
         if (!translationCommand.TryExecuteAsync(
                 lifetimeCancellation.Token,
                 out var execution))
@@ -278,10 +302,90 @@ public partial class MainWindow : Window
         OverlayToggleButton.Content = overlayWindow.IsVisible ? "Ẩn Overlay" : "Hiện Overlay";
         if (!overlayWindow.IsVisible && !overlayWindow.IsHiddenForCapture)
         {
+            if (realtimeTranslationController.IsRunning)
+            {
+                await StopRealtimeAsync(keepOverlayHidden: true);
+            }
+
             CaptureOverlaySettings();
             await SaveSettingsAsync();
         }
     }
+
+    private async void OverlayWindow_RealtimeModeChanged(
+        object? sender,
+        RealtimeModeChangedEventArgs e)
+    {
+        if (!e.Enabled)
+        {
+            await StopRealtimeAsync();
+            return;
+        }
+
+        var region = captureSession.SelectedRegion;
+        if (region is null)
+        {
+            overlayWindow.SetRealtimeEnabled(false);
+            overlayWindow.ShowError("Vui lòng chọn vùng trước.");
+            viewModel.StatusText = "Vui lòng chọn vùng trước.";
+            return;
+        }
+
+        var model = viewModel.SelectedModel;
+        if (string.IsNullOrWhiteSpace(model))
+        {
+            overlayWindow.SetRealtimeEnabled(false);
+            overlayWindow.ShowError("Vui lòng chọn một model Ollama.");
+            viewModel.StatusText = "Vui lòng chọn một model Ollama.";
+            return;
+        }
+
+        if (realtimeTranslationController.Start(
+                region.Value,
+                model,
+                lifetimeCancellation.Token))
+        {
+            SetOperationControlsEnabled(false);
+            viewModel.StatusText = "Realtime đang theo dõi vùng đã chọn.";
+        }
+    }
+
+    private async Task StopRealtimeAsync(bool keepOverlayHidden = false)
+    {
+        await realtimeTranslationController.StopAsync();
+        overlayWindow.SetRealtimeEnabled(false);
+        if (keepOverlayHidden && overlayWindow.IsVisible)
+        {
+            overlayWindow.Hide();
+        }
+
+        if (!lifetimeCancellation.IsCancellationRequested)
+        {
+            SetOperationControlsEnabled(true);
+            viewModel.StatusText = "Realtime đã tắt. Có thể dịch thủ công.";
+        }
+    }
+
+    private void RealtimeTranslationController_ResultAvailable(
+        RealtimeTranslationPipelineResult result)
+    {
+        if (!result.TextChanged || result.PipelineResult.Translation is null)
+        {
+            return;
+        }
+
+        Dispatcher.BeginInvoke(() =>
+        {
+            ApplyTranslationResult(result.PipelineResult, updateOverlay: false);
+            viewModel.StatusText = "Realtime: đã cập nhật bản dịch.";
+        });
+    }
+
+    private void RealtimeTranslationController_StepFailed(Exception exception) =>
+        Dispatcher.BeginInvoke(() =>
+        {
+            viewModel.StatusText = GetOverlayErrorMessage(exception);
+        });
 
     private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {

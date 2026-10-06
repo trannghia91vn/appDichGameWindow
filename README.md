@@ -2,7 +2,7 @@
 
 GameTranslator is a small Windows-only desktop app for local English-to-Vietnamese game screen translation. It uses local screen capture, RapidOcrNet, and a local Ollama model.
 
-The workflow is fully manual: select a region, click `DỊCH`, capture one image, recognize English text, then translate it to Vietnamese. Nothing runs continuously in the background.
+Select a region and use `DỊCH`/the global hotkey for one translation, or explicitly enable `Realtime` in the overlay to translate when recognized text changes. Realtime is off by default.
 
 ## Portable Release Requirements
 
@@ -52,7 +52,7 @@ The script produces `artifacts\publish\win-x64\` and `artifacts\GameTranslator-w
 
 ## Current Status
 
-Phase 0 through Phase 6 are implemented. Version 1.0.0 is distributed as a self-contained Windows x64 folder and portable ZIP. OCR uses RapidOcrNet 4.2.0 and bundled PP-OCRv5 Latin models on CPU. Translation uses local Ollama `/api/chat`, and successful results are cached in memory by exact normalized OCR text plus model. A lightweight always-on-top overlay displays Vietnamese while MainWindow remains the diagnostic/control surface. The configurable global translation hotkey defaults to `F8`.
+Phase 0 through Phase 7 are implemented. Version 1.1.0 is distributed as a self-contained Windows x64 folder and portable ZIP. OCR uses RapidOcrNet 4.2.0 and bundled PP-OCRv5 Latin models on CPU. Translation uses local Ollama `/api/chat`, and successful results are cached in memory by exact normalized OCR text plus model. A lightweight always-on-top overlay displays Vietnamese while MainWindow remains the diagnostic/control surface. The configurable global translation hotkey defaults to `F8`.
 
 ## Usage
 
@@ -73,6 +73,8 @@ The same translation command can be started with the global hotkey while the gam
 3. Drag and resize the overlay to a convenient position.
 4. When dialogue appears, click `DỊCH` in the overlay.
 5. Read the Vietnamese result while the overlay stays above the game.
+
+For automatic updates, turn the overlay `Realtime` switch ON. The app observes the selected region sequentially and translates only when normalized OCR text changes. Turn the switch OFF to stop realtime and use `DỊCH` or the global hotkey manually again. Hiding the overlay also stops realtime.
 
 The overlay hides only for the screenshot, then returns immediately with a processing state while OCR and Ollama continue. Font size, background opacity, position, dimensions, and the global hotkey persist between sessions. Optional click-through defaults off; while it is enabled, use the global hotkey to translate without interacting with the overlay.
 

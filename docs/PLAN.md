@@ -64,3 +64,13 @@ Status: complete.
 - Added a concise end-user release README and kept writable settings under `%LOCALAPPDATA%/GameTranslator`.
 - Verified startup from a ZIP-only extraction with package-local .NET, offline/missing-model startup, Release OCR/Ollama/overlay workflow, exact-cache reuse, and global-hotkey registration/focus behavior.
 
+## Phase 7 - Opt-in realtime overlay translation
+
+Status: complete.
+
+- Added an overlay `Realtime` switch that defaults off and leaves manual `DỊCH` available while off.
+- Added a cancellation-aware sequential observation loop with no overlapping or queued iterations.
+- Reused normalized OCR text to skip Ollama when the selected-region text is unchanged.
+- Stopped realtime when disabled, when the overlay is hidden, or when the application closes.
+- Added focused coverage for changed, unchanged, blank, repeated, cancellation, and overlay capture-exclusion paths.
+

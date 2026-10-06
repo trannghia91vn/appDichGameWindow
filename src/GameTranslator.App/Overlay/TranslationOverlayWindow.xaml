@@ -40,6 +40,7 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
@@ -52,19 +53,73 @@
                             FontWeight="SemiBold"
                             Click="TranslateButton_Click"
                             Content="DỊCH" />
-                    <TextBlock Grid.Column="1"
-                               Margin="12,0,0,0"
+                    <StackPanel Grid.Column="1"
+                                Margin="10,0,0,0"
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal">
+                        <TextBlock Margin="0,0,6,0"
+                                   VerticalAlignment="Center"
+                                   Foreground="#D7DEE8"
+                                   FontSize="12"
+                                   Text="Realtime" />
+                        <ToggleButton x:Name="RealtimeToggle"
+                                      Width="52"
+                                      Height="26"
+                                      AutomationProperties.Name="Dịch realtime"
+                                      ToolTip="Tự động dịch khi nội dung vùng chọn thay đổi"
+                                      Checked="RealtimeToggle_Changed"
+                                      Unchecked="RealtimeToggle_Changed">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Border x:Name="Track"
+                                            CornerRadius="13"
+                                            Background="#4A5568"
+                                            BorderBrush="#718096"
+                                            BorderThickness="1">
+                                        <Grid>
+                                            <Ellipse x:Name="Thumb"
+                                                     Width="18"
+                                                     Height="18"
+                                                     Margin="3"
+                                                     HorizontalAlignment="Left"
+                                                     Fill="#FFFFFF" />
+                                            <TextBlock x:Name="StateText"
+                                                       Margin="0,0,5,0"
+                                                       HorizontalAlignment="Right"
+                                                       VerticalAlignment="Center"
+                                                       Foreground="#E7ECF2"
+                                                       FontSize="9"
+                                                       FontWeight="SemiBold"
+                                                       Text="OFF" />
+                                        </Grid>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsChecked" Value="True">
+                                            <Setter TargetName="Track" Property="Background" Value="#16856B" />
+                                            <Setter TargetName="Track" Property="BorderBrush" Value="#39B99A" />
+                                            <Setter TargetName="Thumb" Property="HorizontalAlignment" Value="Right" />
+                                            <Setter TargetName="StateText" Property="HorizontalAlignment" Value="Left" />
+                                            <Setter TargetName="StateText" Property="Margin" Value="5,0,0,0" />
+                                            <Setter TargetName="StateText" Property="Text" Value="ON" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
+                    </StackPanel>
+                    <TextBlock Grid.Column="2"
+                               Margin="10,0,0,0"
                                VerticalAlignment="Center"
                                Foreground="#D7DEE8"
                                Text="GameTranslator" />
-                    <Button Grid.Column="2"
+                    <Button Grid.Column="3"
                             Width="48"
                             Height="30"
                             Margin="4,0,0,0"
                             Click="HideButton_Click"
                             Content="Ẩn"
                             ToolTip="Ẩn overlay" />
-                    <Button Grid.Column="3"
+                    <Button Grid.Column="4"
                             Width="38"
                             Height="30"
                             Margin="4,0,0,0"

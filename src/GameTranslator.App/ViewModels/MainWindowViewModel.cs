@@ -29,7 +29,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public ObservableCollection<string> AvailableModels { get; } = [];
 
     public string VersionText { get; } =
-        $"v{typeof(MainWindowViewModel).Assembly.GetName().Version?.ToString(3) ?? "1.0.0"}";
+        $"v{typeof(MainWindowViewModel).Assembly.GetName().Version?.ToString(3) ?? "1.1.0"}";
 
     public string OllamaBaseUrl
     {

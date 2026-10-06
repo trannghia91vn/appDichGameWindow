@@ -49,6 +49,100 @@ public sealed class TranslationPipelineTests
     }
 
     [Fact]
+    public async Task RealtimeUnchangedTextSkipsTranslationEntirely()
+    {
+        var capture = new FakeCaptureService();
+        var ocr = new FakeOcrService("  The gate is locked.  ");
+        var translation = new FakeTranslationService("Cổng đã khóa.");
+        var pipeline = CreatePipeline(capture, ocr, translation);
+
+        var first = await pipeline.TranslateIfChangedAsync(
+            Region,
+            "translategemma:4b",
+            previousOcrText: null,
+            CancellationToken.None);
+        var unchanged = await pipeline.TranslateIfChangedAsync(
+            Region,
+            "translategemma:4b",
+            first.PipelineResult.Ocr.Text,
+            CancellationToken.None);
+
+        Assert.True(first.TextChanged);
+        Assert.NotNull(first.PipelineResult.Translation);
+        Assert.False(unchanged.TextChanged);
+        Assert.Null(unchanged.PipelineResult.Translation);
+        Assert.Equal(2, capture.CallCount);
+        Assert.Equal(2, ocr.CallCount);
+        Assert.Equal(1, translation.CallCount);
+    }
+
+    [Fact]
+    public async Task RealtimeChangedTextTranslatesNewTextOnce()
+    {
+        var capture = new FakeCaptureService();
+        var ocr = new SequenceOcrService("FIRST LINE", "SECOND LINE");
+        var translation = new FakeTranslationService("Bản dịch");
+        var pipeline = new TranslationPipeline(
+            capture,
+            ocr,
+            translation,
+            new ExactTranslationCache());
+
+        var first = await pipeline.TranslateIfChangedAsync(
+            Region,
+            "translategemma:4b",
+            previousOcrText: null,
+            CancellationToken.None);
+        var second = await pipeline.TranslateIfChangedAsync(
+            Region,
+            "translategemma:4b",
+            first.PipelineResult.Ocr.Text,
+            CancellationToken.None);
+
+        Assert.True(first.TextChanged);
+        Assert.True(second.TextChanged);
+        Assert.Equal("SECOND LINE", second.PipelineResult.Ocr.Text);
+        Assert.Equal(2, translation.CallCount);
+    }
+
+    [Fact]
+    public async Task RealtimeTextReturningAfterBlankIsTranslatedAgain()
+    {
+        var capture = new FakeCaptureService();
+        var ocr = new SequenceOcrService("REPEATED LINE", string.Empty, "REPEATED LINE");
+        var translation = new FakeTranslationService("Bản dịch");
+        var pipeline = new TranslationPipeline(
+            capture,
+            ocr,
+            translation,
+            new ExactTranslationCache());
+
+        var first = await pipeline.TranslateIfChangedAsync(
+            Region,
+            "translategemma:4b",
+            previousOcrText: null,
+            CancellationToken.None);
+        var blank = await pipeline.TranslateIfChangedAsync(
+            Region,
+            "translategemma:4b",
+            first.PipelineResult.Ocr.Text,
+            CancellationToken.None);
+        var repeated = await pipeline.TranslateIfChangedAsync(
+            Region,
+            "translategemma:4b",
+            blank.PipelineResult.Ocr.Text,
+            CancellationToken.None);
+
+        Assert.True(blank.TextChanged);
+        Assert.False(blank.PipelineResult.Ocr.HasText);
+        Assert.Null(blank.PipelineResult.Translation);
+        Assert.True(repeated.TextChanged);
+        Assert.NotNull(repeated.PipelineResult.Translation);
+        Assert.Equal(1, translation.CallCount);
+        Assert.True(repeated.PipelineResult.Translation?.FromCache);
+    }
+
+    [Fact]
     public async Task EmptyOcrDoesNotCallTranslationService()
     {
         var translation = new FakeTranslationService("unused");
@@ -173,6 +267,20 @@ public sealed class TranslationPipelineTests
             CancellationToken cancellationToken)
         {
             CallCount++;
+            return Task.FromResult(new OcrResult(text, TimeSpan.FromMilliseconds(12)));
+        }
+    }
+
+    private sealed class SequenceOcrService(params string[] texts) : IOcrService
+    {
+        private int index;
+
+        public Task<OcrResult> RecognizeEnglishAsync(
+            CapturedImage image,
+            CancellationToken cancellationToken)
+        {
+            var text = texts[Math.Min(index, texts.Length - 1)];
+            index++;
             return Task.FromResult(new OcrResult(text, TimeSpan.FromMilliseconds(12)));
         }
     }

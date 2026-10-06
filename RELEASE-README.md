@@ -1,4 +1,4 @@
-# GameTranslator 1.0.0
+# GameTranslator 1.1.0
 
 GameTranslator chạy hoàn toàn local trên Windows 10/11 x64. Gói portable đã bao gồm .NET và OCR; không cần cài .NET riêng.
 
@@ -20,7 +20,8 @@ GameTranslator không cài Ollama, không tự tải model và không gửi ản
 3. Chọn một model Ollama.
 4. Nhấn `Chọn vùng` và kéo quanh vùng hội thoại tiếng Anh trong game.
 5. Nhấn `Hiện Overlay`, sau đó đặt overlay ở vị trí mong muốn.
-6. Nhấn phím tắt dịch khi cần; mặc định là `F8`.
+6. Dịch thủ công bằng `DỊCH` hoặc phím tắt; mặc định là `F8`.
+7. Hoặc bật switch `Realtime` trên overlay để tự dịch khi chữ trong vùng chọn thay đổi. Tắt switch để trở lại dịch thủ công; ẩn overlay cũng dừng Realtime.
 
 Cấu hình được lưu tại `%LOCALAPPDATA%\GameTranslator\settings.json`.
 

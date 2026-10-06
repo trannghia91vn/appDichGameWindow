@@ -89,7 +89,11 @@ public sealed class TranslationCommandTests
 
     private sealed class FakeOverlayView : ITranslationOverlayView
     {
+        public string DisplayedText { get; private set; } = string.Empty;
+
         public void SetTranslationEnabled(bool isEnabled) { }
+
+        public void SetStatus(string message) { }
 
         public void ShowProcessing(string message) { }
 
@@ -98,9 +102,9 @@ public sealed class TranslationCommandTests
         public Task ShowAfterCaptureAsync(string message, CancellationToken cancellationToken) =>
             Task.CompletedTask;
 
-        public void ShowTranslation(string translatedText) { }
+        public void ShowTranslation(string translatedText) => DisplayedText = translatedText;
 
-        public void ShowError(string message) { }
+        public void ShowError(string message) => DisplayedText = message;
     }
 
     private static TranslationPipelineResult CreateResult(string model)

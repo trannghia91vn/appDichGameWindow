@@ -82,6 +82,8 @@ public sealed class OverlayTranslationCoordinatorTests
     {
         public string Text { get; private set; } = string.Empty;
 
+        public string DisplayedText => Text;
+
         public bool TranslationEnabled { get; private set; } = true;
 
         public void SetTranslationEnabled(bool isEnabled)
@@ -89,6 +91,8 @@ public sealed class OverlayTranslationCoordinatorTests
             TranslationEnabled = isEnabled;
             events.Add($"enabled:{isEnabled}");
         }
+
+        public void SetStatus(string message) => events.Add($"status:{message}");
 
         public void ShowProcessing(string message) => events.Add($"processing:{message}");
 
