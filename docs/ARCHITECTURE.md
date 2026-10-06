@@ -57,9 +57,9 @@ explicit translation command
 
 `TranslationPipeline` exposes a capture-completed callback after the screenshot is fully materialized and before OCR. This keeps the core independent of WPF while allowing the overlay to remain hidden only during capture.
 
-When the user explicitly enables the overlay `Realtime` switch, `RealtimeTranslationController` runs the same pipeline in a cancellation-aware sequential loop. Each iteration must complete before the controller waits 850 ms and starts another. `TranslationPipeline.TranslateIfChangedAsync` compares normalized OCR text with the previous observation and skips cache/Ollama work when unchanged. Blank observations are remembered so the same dialogue is translated again if it disappears and later returns.
+When the user explicitly enables the overlay `Realtime` switch, `RealtimeTranslationController` runs the same pipeline in a cancellation-aware sequential loop. Each iteration must complete before another starts. A changed observation resets the delay to 1.5 seconds; consecutive unchanged observations add 500 ms up to 3 seconds, while transient failures use the 3-second maximum. `TranslationPipeline.TranslateIfChangedAsync` compares normalized OCR text with the previous observation and skips cache/Ollama work when unchanged. Blank observations are remembered so the same dialogue is translated again if it disappears and later returns.
 
-Realtime defaults off, never starts with the application, stops when the switch is turned off or the overlay is hidden, and disables manual translation controls while active. There is no overlapping capture/OCR/translation, work queue, frame-similarity detector, or separate background OCR worker.
+Realtime defaults off, never starts with the application, stops when the switch is turned off or the overlay is hidden, and disables manual translation controls while active. While running, a disposable execution scope lowers the process priority to `BelowNormal` and restores the original priority on stop. There is no overlapping capture/OCR/translation, work queue, frame-similarity detector, or separate background OCR worker.
 
 ## Region Coordinates
 
@@ -80,7 +80,7 @@ The app declares Per-Monitor-V2 DPI awareness in `app.manifest`. `RegionSelector
 
 `RapidOcrService` uses RapidOcrNet 4.2.0 with the bundled PP-OCRv5 Latin detector, classifier, recognizer, and dictionary. Model paths are resolved from `AppContext.BaseDirectory/models/v5`, so runtime does not depend on the process working directory or a NuGet cache path.
 
-Initialization is lazy and represented by one cached task per application service instance. The initialized `RapidOcr` engine is reused for all requests, while a semaphore serializes inference. RapidOcrNet runs with its default CPU provider. There is no startup capture and no warm-up image.
+Initialization is lazy and represented by one cached task per application service instance. The initialized `RapidOcr` engine is reused for all requests, while a semaphore serializes inference. RapidOcrNet stays on the CPU provider but limits ONNX inference to two threads. Game text uses the PP-OCRv5 defaults with the 180-degree angle classifier disabled because the product targets horizontal English dialogue. There is no startup capture and no warm-up image.
 
 Captured PNG bytes are decoded directly to `SKBitmap`; no temporary image file is created. `DetectAsync` keeps CPU work off the WPF UI thread and accepts cancellation. The OCR output keeps block line breaks, then `OcrTextNormalizer` trims outer/trailing whitespace, normalizes line endings, and collapses repeated blank lines without spelling correction or punctuation changes.
 
@@ -130,7 +130,7 @@ Every trigger enters the same atomic `TranslationCommand` gate. Repeated presses
 
 ## Deployment
 
-Version 1.1.0 targets Windows 10/11 x64 and publishes as a normal self-contained .NET folder. Trimming, NativeAOT, and single-file publishing are disabled so WPF, RapidOcrNet, ONNX Runtime, SkiaSharp, native DLLs, and OCR assets keep their validated deployment layout.
+Version 1.1.1 targets Windows 10/11 x64 and publishes as a normal self-contained .NET folder. Trimming, NativeAOT, and single-file publishing are disabled so WPF, RapidOcrNet, ONNX Runtime, SkiaSharp, native DLLs, and OCR assets keep their validated deployment layout.
 
 The release resolves OCR models only from `models/v5` under `AppContext.BaseDirectory`. The publish verification script requires all four PP-OCRv5 model/dictionary files, RapidOcrNet, ONNX Runtime, SkiaSharp, WPF, and self-contained .NET host/runtime files before producing the portable ZIP. It also rejects developer paths and source/test entries in the package.
 

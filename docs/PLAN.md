@@ -74,3 +74,13 @@ Status: complete.
 - Stopped realtime when disabled, when the overlay is hidden, or when the application closes.
 - Added focused coverage for changed, unchanged, blank, repeated, cancellation, and overlay capture-exclusion paths.
 
+## Phase 8 - Realtime CPU optimization
+
+Status: complete.
+
+- Limited RapidOCR/ONNX inference to two CPU threads and disabled unnecessary angle classification for horizontal game text.
+- Replaced the fixed 850 ms loop with adaptive 1.5-3 second polling and a 3-second failure delay.
+- Lowered process priority only while realtime is active and restored it on stop.
+- Kept frame comparison out of the pipeline so animated game backgrounds cannot suppress text recognition.
+- Verified the 30-second balanced profile with OBS running: 1.4% average and 12.5% peak total-machine CPU across 117 samples, down from the previous 94.1% peak.
+

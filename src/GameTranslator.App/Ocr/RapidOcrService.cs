@@ -9,6 +9,9 @@ namespace GameTranslator.App.Ocr;
 
 public sealed class RapidOcrService : IOcrService, IDisposable
 {
+    private const int InferenceThreadCount = 2;
+    private static readonly RapidOcrOptions GameTextOptions = CreateGameTextOptions();
+
     private readonly object initializationLock = new();
     private readonly SemaphoreSlim inferenceGate = new(1, 1);
     private Task<RapidOcr>? initializationTask;
@@ -34,7 +37,7 @@ public sealed class RapidOcrService : IOcrService, IDisposable
 
             var stopwatch = Stopwatch.StartNew();
             var result = await engine
-                .DetectAsync(bitmap, RapidOcrOptions.Default, null, cancellationToken)
+                .DetectAsync(bitmap, GameTextOptions, null, cancellationToken)
                 .ConfigureAwait(false);
             stopwatch.Stop();
 
@@ -99,12 +102,14 @@ public sealed class RapidOcrService : IOcrService, IDisposable
                 detPath: Path.Combine(modelDirectory, "ch_PP-OCRv5_mobile_det.onnx"),
                 clsPath: Path.Combine(modelDirectory, "ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx"),
                 recPath: Path.Combine(modelDirectory, "latin_PP-OCRv5_rec_mobile_infer.onnx"),
-                keysPath: Path.Combine(modelDirectory, "ppocrv5_latin_dict.txt"));
+                keysPath: Path.Combine(modelDirectory, "ppocrv5_latin_dict.txt"),
+                numThread: InferenceThreadCount);
             stopwatch.Stop();
             InitializationDuration = stopwatch.Elapsed;
             Trace.TraceInformation(
-                "RapidOcrNet initialized in {0:F0} ms.",
-                stopwatch.Elapsed.TotalMilliseconds);
+                "RapidOcrNet initialized in {0:F0} ms with {1} inference threads.",
+                stopwatch.Elapsed.TotalMilliseconds,
+                InferenceThreadCount);
             return engine;
         }
         catch
@@ -112,6 +117,32 @@ public sealed class RapidOcrService : IOcrService, IDisposable
             engine.Dispose();
             throw;
         }
+    }
+
+    private static RapidOcrOptions CreateGameTextOptions()
+    {
+        var defaults = RapidOcrOptions.Default;
+        return new RapidOcrOptions
+        {
+            Padding = defaults.Padding,
+            ImgResize = defaults.ImgResize,
+            LimitSideLen = defaults.LimitSideLen,
+            MaxSideLen = defaults.MaxSideLen,
+            MinSideLen = defaults.MinSideLen,
+            WidthHeightRatio = defaults.WidthHeightRatio,
+            MinHeight = defaults.MinHeight,
+            TextScore = defaults.TextScore,
+            ClsThresh = defaults.ClsThresh,
+            ClsPreserveAspectRatio = defaults.ClsPreserveAspectRatio,
+            RecMaxDegreeOfParallelism = defaults.RecMaxDegreeOfParallelism,
+            BoxScoreThresh = defaults.BoxScoreThresh,
+            BoxThresh = defaults.BoxThresh,
+            UnClipRatio = defaults.UnClipRatio,
+            DoAngle = false,
+            MostAngle = defaults.MostAngle,
+            ReturnWordBox = defaults.ReturnWordBox,
+            ReturnSingleCharBox = defaults.ReturnSingleCharBox
+        };
     }
 
     private static double? CalculateAverageConfidence(RapidOcrNet.OcrResult result)

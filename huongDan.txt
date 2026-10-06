@@ -71,6 +71,8 @@ Ban portable da co san .NET va OCR, khong can cai .NET rieng.
    dung Realtime.
 
 Realtime mac dinh la OFF va chi chay sau khi ban chu dong bat switch.
+Realtime dung toi da 2 luong OCR va tu gian nhip kiem tra tu 1,5 den 3 giay
+khi chu khong doi de tranh lam lag game va OBS.
 
 
 6. XU LY SU CO NHANH

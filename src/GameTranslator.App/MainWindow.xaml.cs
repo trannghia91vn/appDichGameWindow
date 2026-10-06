@@ -78,7 +78,9 @@ public partial class MainWindow : Window
             () => viewModel.SelectedModel,
             () => overlayWindow.IsVisible);
         realtimeTranslationController = new RealtimeTranslationController(
-            realtimeOverlayCoordinator.ExecuteAsync);
+            realtimeOverlayCoordinator.ExecuteAsync,
+            RealtimePollingOptions.Balanced,
+            RealtimeProcessPriorityScope.EnterBelowNormal);
         globalHotkeyService = new GlobalHotkeyService();
         hotkeyRegistrationManager = new HotkeyRegistrationManager(globalHotkeyService);
         ApplyOverlaySettings();

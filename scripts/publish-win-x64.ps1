@@ -116,8 +116,8 @@ foreach ($relativePath in $requiredFiles) {
 
 $exePath = Join-Path $publishDirectory "GameTranslator.exe"
 $versionInfo = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($exePath)
-if ($versionInfo.FileVersion -ne "1.1.0.0" -or
-    $versionInfo.ProductVersion -notlike "1.1.0*") {
+if ($versionInfo.FileVersion -ne "1.1.1.0" -or
+    $versionInfo.ProductVersion -notlike "1.1.1*") {
     throw "Unexpected executable version: file=$($versionInfo.FileVersion), product=$($versionInfo.ProductVersion)"
 }
 

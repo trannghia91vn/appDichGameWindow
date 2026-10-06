@@ -4,15 +4,15 @@ namespace GameTranslator.App.Translation;
 
 public sealed class RealtimeTranslationController
 {
-    private static readonly TimeSpan DefaultInterval = TimeSpan.FromMilliseconds(850);
-
     private readonly Func<
         ScreenRegion,
         string,
         string?,
         CancellationToken,
         Task<RealtimeTranslationPipelineResult>> executeStep;
-    private readonly TimeSpan interval;
+    private readonly RealtimePollingOptions pollingOptions;
+    private readonly Func<IDisposable> executionScopeFactory;
+    private readonly Func<TimeSpan, CancellationToken, Task> delayAsync;
     private CancellationTokenSource? sessionCancellation;
     private Task? loopTask;
 
@@ -23,14 +23,15 @@ public sealed class RealtimeTranslationController
             string?,
             CancellationToken,
             Task<RealtimeTranslationPipelineResult>> executeStep,
-        TimeSpan? interval = null)
+        RealtimePollingOptions? pollingOptions = null,
+        Func<IDisposable>? executionScopeFactory = null,
+        Func<TimeSpan, CancellationToken, Task>? delayAsync = null)
     {
         this.executeStep = executeStep;
-        this.interval = interval ?? DefaultInterval;
-        if (this.interval < TimeSpan.Zero)
-        {
-            throw new ArgumentOutOfRangeException(nameof(interval));
-        }
+        this.pollingOptions = pollingOptions ?? RealtimePollingOptions.Balanced;
+        this.executionScopeFactory = executionScopeFactory ??
+            (static () => EmptyDisposable.Instance);
+        this.delayAsync = delayAsync ?? Task.Delay;
     }
 
     public event Action<RealtimeTranslationPipelineResult>? ResultAvailable;
@@ -80,7 +81,9 @@ public sealed class RealtimeTranslationController
         string model,
         CancellationToken cancellationToken)
     {
+        using var executionScope = executionScopeFactory();
         string? previousOcrText = null;
+        var nextDelay = pollingOptions.InitialDelay;
 
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -96,6 +99,11 @@ public sealed class RealtimeTranslationController
                 if (result.TextChanged)
                 {
                     previousOcrText = result.PipelineResult.Ocr.Text;
+                    nextDelay = pollingOptions.InitialDelay;
+                }
+                else
+                {
+                    nextDelay = pollingOptions.Increase(nextDelay);
                 }
 
                 ResultAvailable?.Invoke(result);
@@ -112,16 +120,24 @@ public sealed class RealtimeTranslationController
                 }
 
                 StepFailed?.Invoke(ex);
+                nextDelay = pollingOptions.MaximumDelay;
             }
 
             try
             {
-                await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
+                await delayAsync(nextDelay, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
                 break;
             }
         }
+    }
+
+    private sealed class EmptyDisposable : IDisposable
+    {
+        public static EmptyDisposable Instance { get; } = new();
+
+        public void Dispose() { }
     }
 }
