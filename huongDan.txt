@@ -1,7 +1,18 @@
 HUONG DAN MO VA SU DUNG GAMETRANSLATOR
 =====================================
 
-1. FILE EXE NAM O DAU?
+1. FILE EXE DA CAI NAM O DAU?
+
+Mo app nhanh bang shortcut "GameTranslator" tren Desktop hoac Start Menu.
+
+File chay chinh da cai tren may nam tai:
+
+C:\Users\trann\AppData\Local\Programs\GameTranslator\GameTranslator.exe
+
+Day la ban nen dung hang ngay.
+
+
+2. FILE BUILD VA FILE ZIP NAM O DAU?
 
 Sau khi tao ban release, file chay chinh nam tai:
 
@@ -17,7 +28,7 @@ nam cung thu muc. Khi chuyen sang may khac, hay chep file ZIP, giai nen toan bo,
 sau do chay GameTranslator.exe trong thu muc vua giai nen.
 
 
-2. NEU KHONG THAY THU MUC ARTIFACTS HOAC FILE EXE
+3. NEU KHONG THAY THU MUC ARTIFACTS HOAC FILE EXE
 
 Thu muc artifacts khong duoc dua len GitHub vi chua cac file build rat lon.
 Sau khi clone source tu GitHub, mo PowerShell tai thu muc du an va chay:
@@ -25,10 +36,14 @@ Sau khi clone source tu GitHub, mo PowerShell tai thu muc du an va chay:
 .\scripts\publish-win-x64.ps1
 
 Script se tu dong restore, build Release, chay test, tao ban portable va file ZIP.
-Sau khi script hoan tat, file EXE se xuat hien tai duong dan o muc 1.
+Sau khi script hoan tat, cai hoac cap nhat ban tren may bang lenh:
+
+.\scripts\install-current-user.ps1
+
+Script nay se chep de ban moi va tao shortcut Desktop/Start Menu.
 
 
-3. YEU CAU TRUOC KHI CHAY
+4. YEU CAU TRUOC KHI CHAY
 
 - Windows 10 hoac Windows 11 x64.
 - Ollama da duoc cai va dang chay.
@@ -41,7 +56,7 @@ ollama pull translategemma:4b
 Ban portable da co san .NET va OCR, khong can cai .NET rieng.
 
 
-4. CACH SU DUNG APP
+5. CACH SU DUNG APP
 
 1. Khoi dong Ollama.
 2. Chay GameTranslator.exe.
@@ -58,7 +73,7 @@ Ban portable da co san .NET va OCR, khong can cai .NET rieng.
 Realtime mac dinh la OFF va chi chay sau khi ban chu dong bat switch.
 
 
-5. XU LY SU CO NHANH
+6. XU LY SU CO NHANH
 
 - Ollama khong ket noi: mo Ollama, kiem tra URL http://localhost:11434 va bam
   "Lam moi" trong app.
@@ -68,7 +83,7 @@ Realtime mac dinh la OFF va chi chay sau khi ban chu dong bat switch.
 - Overlay khong hien: bam "Hien Overlay" trong cua so chinh.
 
 
-6. NOI LUU CAU HINH
+7. NOI LUU CAU HINH
 
 Cau hinh ca nhan nam tai:
 

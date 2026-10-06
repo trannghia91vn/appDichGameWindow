@@ -50,6 +50,14 @@ Create and verify the portable release with:
 
 The script produces `artifacts\publish\win-x64\` and `artifacts\GameTranslator-win-x64.zip` after Release build, tests, and runtime-file validation succeed.
 
+Install or overwrite the current-user copy and create Desktop/Start Menu shortcuts with:
+
+```powershell
+.\scripts\install-current-user.ps1
+```
+
+The installed executable is `%LOCALAPPDATA%\Programs\GameTranslator\GameTranslator.exe`. Personal settings remain in `%LOCALAPPDATA%\GameTranslator\settings.json`.
+
 ## Current Status
 
 Phase 0 through Phase 7 are implemented. Version 1.1.0 is distributed as a self-contained Windows x64 folder and portable ZIP. OCR uses RapidOcrNet 4.2.0 and bundled PP-OCRv5 Latin models on CPU. Translation uses local Ollama `/api/chat`, and successful results are cached in memory by exact normalized OCR text plus model. A lightweight always-on-top overlay displays Vietnamese while MainWindow remains the diagnostic/control surface. The configurable global translation hotkey defaults to `F8`.
