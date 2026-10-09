@@ -1,4 +1,4 @@
-# GameTranslator 1.1.1
+# GameTranslator 1.1.2
 
 GameTranslator chạy hoàn toàn local trên Windows 10/11 x64. Gói portable đã bao gồm .NET và OCR; không cần cài .NET riêng.
 
@@ -26,6 +26,8 @@ GameTranslator không cài Ollama, không tự tải model và không gửi ản
 Realtime được giới hạn ở hai luồng OCR và tự giãn nhịp kiểm tra từ 1,5 đến 3 giây khi chữ không đổi để giảm ảnh hưởng đến game và OBS.
 
 Cấu hình được lưu tại `%LOCALAPPDATA%\GameTranslator\settings.json`.
+
+Chữ dịch trên overlay có màu vàng và được nối thành đoạn liền mạch, tự xuống dòng theo chiều rộng cửa sổ.
 
 ## Xử lý sự cố
 

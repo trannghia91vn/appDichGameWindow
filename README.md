@@ -60,7 +60,7 @@ The installed executable is `%LOCALAPPDATA%\Programs\GameTranslator\GameTranslat
 
 ## Current Status
 
-Phase 0 through Phase 8 are implemented. Version 1.1.1 is distributed as a self-contained Windows x64 folder and portable ZIP. OCR uses RapidOcrNet 4.2.0 and bundled PP-OCRv5 Latin models on two CPU inference threads. Translation uses local Ollama `/api/chat`, and successful results are cached in memory by exact normalized OCR text plus model. A lightweight always-on-top overlay displays Vietnamese while MainWindow remains the diagnostic/control surface. The configurable global translation hotkey defaults to `F8`.
+Phase 0 through Phase 8 are implemented. Version 1.1.2 is distributed as a self-contained Windows x64 folder and portable ZIP. OCR uses RapidOcrNet 4.2.0 and bundled PP-OCRv5 Latin models on two CPU inference threads. Translation uses local Ollama `/api/chat`, and successful results are cached in memory by exact normalized OCR text plus model. A lightweight always-on-top overlay displays Vietnamese while MainWindow remains the diagnostic/control surface. The configurable global translation hotkey defaults to `F8`.
 
 ## Usage
 

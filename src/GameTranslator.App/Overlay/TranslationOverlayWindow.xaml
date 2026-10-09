@@ -140,7 +140,7 @@
                      HorizontalScrollBarVisibility="Disabled"
                      BorderThickness="0"
                      Background="Transparent"
-                     Foreground="#FFFFFF"
+                     Foreground="#FFD700"
                      FontFamily="Segoe UI"
                      FontSize="23"
                      Text="Sẵn sàng dịch." />

@@ -183,7 +183,7 @@ public partial class TranslationOverlayWindow : Window, ITranslationOverlayView
         RunOnUiThread(() =>
         {
             IsHiddenForCapture = false;
-            TranslationTextBox.Text = translatedText;
+            TranslationTextBox.Text = OverlayTextFormatter.Format(translatedText);
             StatusTextBlock.Text = "Đã dịch.";
             ShowWithoutActivation();
         });
@@ -200,7 +200,7 @@ public partial class TranslationOverlayWindow : Window, ITranslationOverlayView
     public void UpdateTranslationWithoutShowing(string translatedText) =>
         RunOnUiThread(() =>
         {
-            TranslationTextBox.Text = translatedText;
+            TranslationTextBox.Text = OverlayTextFormatter.Format(translatedText);
             StatusTextBlock.Text = "Đã dịch.";
         });
 

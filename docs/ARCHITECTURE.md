@@ -107,6 +107,8 @@ The selected model and Ollama base URL are saved to `%LocalAppData%/GameTranslat
 
 ## Translation Overlay
 
+Overlay translations are rendered in gold yellow (`#FFD700`). Before display, whitespace and hard line breaks in the translated output are joined with single spaces so text flows as one paragraph and wraps naturally to the window width. This formatting applies to both manual and realtime translation; the original OCR text, translation results, and cache remain unchanged.
+
 `TranslationOverlayWindow` is a borderless, always-on-top WPF window with a draggable header, resize grip, wrapped/scrollable Vietnamese text, processing state, manual `DỊCH`, an opt-in `Realtime` switch, hide, and close-as-hide controls. It does not own MainWindow, so MainWindow can remain minimized while the overlay stays visible. Manual `DỊCH` is disabled only while realtime is active.
 
 Two independent layers prevent overlay pixels from contaminating OCR:
@@ -130,7 +132,7 @@ Every trigger enters the same atomic `TranslationCommand` gate. Repeated presses
 
 ## Deployment
 
-Version 1.1.1 targets Windows 10/11 x64 and publishes as a normal self-contained .NET folder. Trimming, NativeAOT, and single-file publishing are disabled so WPF, RapidOcrNet, ONNX Runtime, SkiaSharp, native DLLs, and OCR assets keep their validated deployment layout.
+Version 1.1.2 targets Windows 10/11 x64 and publishes as a normal self-contained .NET folder. Trimming, NativeAOT, and single-file publishing are disabled so WPF, RapidOcrNet, ONNX Runtime, SkiaSharp, native DLLs, and OCR assets keep their validated deployment layout.
 
 The release resolves OCR models only from `models/v5` under `AppContext.BaseDirectory`. The publish verification script requires all four PP-OCRv5 model/dictionary files, RapidOcrNet, ONNX Runtime, SkiaSharp, WPF, and self-contained .NET host/runtime files before producing the portable ZIP. It also rejects developer paths and source/test entries in the package.
 
